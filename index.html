@@ -1,21 +1,934 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- iMessage / Open Graph preview -->
+    <title>Market Cap Duel</title>
+    <meta name="description" content="Think you know which company is worth more? Swipe to find out.">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://platobougas.github.io/Marketcap-Duel/">
+    <meta property="og:title" content="Market Cap Duel">
+    <meta property="og:description" content="Think you know which company is worth more? Swipe to find out.">
+    <meta property="og:image" content="https://platobougas.github.io/Marketcap-Duel/preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Market Cap Duel">
+    <meta name="twitter:description" content="Think you know which company is worth more? Swipe to find out.">
+    <meta name="twitter:image" content="https://platobougas.github.io/Marketcap-Duel/preview.png">
+
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://cdn.plot.ly; style-src 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://cdn.tailwindcss.com https://stackpath.bootstrapcdn.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src data: blob:; connect-src https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://cdn.plot.ly;">
     <style>
     html, body { height: auto !important; overflow: visible !important; }
     body { margin: 0; padding: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #333; background: #fff; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-    th { background-color: #f5f5f5; font-weight: 600; }
-    img { max-width: 100%; }
-    @media (prefers-color-scheme: dark) {
-        body { color: #e0e0e0; background: #1e1e1e; }
-        th { background-color: #2a2a2a; }
-        th, td { border-color: #444; }
-    }
-</style>
+    </style>
 </head>
-<body><style>:root { --bg: #f0f2f5; --card-bg: #ffffff; --text-main: #1c1e21; --text-sub: #65676b; --primary: #007aff; --success: #4caf50; --error: #f44336; --border: #e1e4e8; --shadow: 0 20px 40px rgba(0,0,0,0.15); } body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; } .game-area { position: relative; width: 350px; height: 550px; perspective: 1000px; } .card { position: absolute; width: 100%; height: 100%; background: var(--card-bg); border-radius: 32px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; cursor: grab; transition: transform 0.1s ease-out, opacity 0.3s; user-select: none; touch-action: none; border: 2px solid transparent; z-index: 2; } .card-header { padding: 25px 0 15px; text-align: center; background: #ffffff; border-bottom: 1px solid #f0f0f0; } .game-title { font-size: 1.1rem; font-weight: 900; color: var(--text-main); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; } .score-row { font-size: 0.85rem; font-weight: 700; color: var(--text-sub); display: flex; justify-content: center; gap: 20px; } .card-half { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 30px; text-align: center; } .top-half { background: #f8f9fa; border-bottom: 1px dashed var(--border); } .company-name { font-size: 1.8rem; font-weight: 800; color: var(--text-main); line-height: 1.2; } .vs-container { position: absolute; top: 58%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 15; pointer-events: none; width: 100%; } .vs-badge { background: #1c1e21; color: white; padding: 6px 18px; border-radius: 20px; font-size: 0.8rem; font-weight: 900; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 10px; } .vs-instruction { font-size: 0.65rem; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.95); padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border); } .hand-hint { width: 35px; height: 35px; border: 3px solid var(--primary); border-radius: 50%; margin-bottom: 12px; animation: swipeHint 2.5s infinite; background: rgba(0, 122, 255, 0.1); box-shadow: 0 0 15px rgba(0, 122, 255, 0.2); } .swipe-label { position: absolute; top: 120px; padding: 10px 20px; border: 6px solid; border-radius: 15px; font-size: 2.5rem; font-weight: 900; text-transform: uppercase; opacity: 0; pointer-events: none; z-index: 20; } .bigger { right: 20px; border-color: var(--success); color: var(--success); transform: rotate(15deg); } .smaller { left: 20px; border-color: var(--error); color: var(--error); transform: rotate(-15deg); } .card.wrong { animation: shake 0.4s; border-color: var(--error); } .card.correct { animation: pulse-success 0.5s ease-out; border-color: var(--success); } @keyframes swipeHint { 0% { transform: translateX(-50px); opacity: 0; } 30% { opacity: 1; } 70% { opacity: 1; } 100% { transform: translateX(50px); opacity: 0; } } @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-15px); } 75% { transform: translateX(15px); } } @keyframes pulse-success { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }</style><div class='game-area' id='gameArea'><div id='cardStack'></div></div><script src='https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js'></script><script>const companies = [ { name: 'NVIDIA', cap: 5.23 }, { name: 'Alphabet', cap: 4.63 }, { name: 'Apple', cap: 4.59 }, { name: 'Microsoft', cap: 3.18 }, { name: 'Amazon', cap: 2.87 }, { name: 'TSMC', cap: 2.20 }, { name: 'Broadcom', cap: 2.03 }, { name: 'Meta', cap: 1.70 }, { name: 'Tesla', cap: 1.40 }, { name: 'Eli Lilly', cap: 1.10 }, { name: 'Berkshire Hathaway', cap: 1.00 }, { name: 'Walmart', cap: 1.00 }, { name: 'JPMorgan Chase', cap: 0.80 }, { name: 'Visa', cap: 0.62 }]; let score = 0; let highScore = localStorage.getItem('mcap_duel_v8_best') || 0; let currentPair = []; function getNewPair() { let idx1 = Math.floor(Math.random() * companies.length); let idx2 = Math.floor(Math.random() * companies.length); while (idx1 === idx2) idx2 = Math.floor(Math.random() * companies.length); return [companies[idx1], companies[idx2]]; } function createCard() { const pair = getNewPair(); currentPair = pair; const card = document.createElement('div'); card.className = 'card'; card.innerHTML = `<div class='card-header'><div class='game-title'>Market Cap Duel</div><div class='score-row'><span>Score: ${score}</span><span>Best: ${highScore}</span></div></div><div class='swipe-label bigger'>BIGGER</div><div class='swipe-label smaller'>SMALLER</div><div class='card-half top-half'><div class='company-name'>${pair[0].name}</div></div><div class='vs-container'><div class='hand-hint'></div><div class='vs-badge'>VS</div><div class='vs-instruction'>Swipe Right if Top is BIGGER</div></div><div class='card-half'><div class='company-name'>${pair[1].name}</div></div>`; setupSwipe(card); document.getElementById('cardStack').appendChild(card); } function setupSwipe(el) { let startX = 0; let isDragging = false; const bigger = el.querySelector('.bigger'); const smaller = el.querySelector('.smaller'); const handleStart = (e) => { isDragging = true; startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; el.style.transition = 'none'; }; const handleMove = (e) => { if (!isDragging) return; const x = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; const walk = x - startX; const rotation = walk / 15; el.style.transform = 'translateX(' + walk + 'px) rotate(' + rotation + 'deg)'; bigger.style.opacity = Math.min(walk / 100, 1); smaller.style.opacity = Math.min(-walk / 100, 1); }; const handleEnd = (e) => { if (!isDragging) return; isDragging = false; const x = e.type.includes('mouse') ? e.pageX : (e.changedTouches ? e.changedTouches[0].pageX : startX); const walk = x - startX; if (Math.abs(walk) > 120) { const isRight = walk > 0; const isCorrect = isRight ? (currentPair[0].cap >= currentPair[1].cap) : (currentPair[0].cap < currentPair[1].cap); if (isCorrect) { score++; if (score > highScore) { highScore = score; localStorage.setItem('mcap_duel_v8_best', highScore); } el.classList.add('correct'); confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, zIndex: 9999 }); setTimeout(() => { el.remove(); createCard(); }, 500); } else { score = 0; el.classList.add('wrong'); setTimeout(() => { el.style.transform = ''; el.classList.remove('wrong'); bigger.style.opacity = 0; smaller.style.opacity = 0; createCard(); el.remove(); }, 600); } } else { el.style.transition = 'transform 0.3s ease'; el.style.transform = ''; bigger.style.opacity = 0; smaller.style.opacity = 0; } }; el.addEventListener('mousedown', handleStart); el.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleEnd); el.addEventListener('touchstart', handleStart); el.addEventListener('touchmove', handleMove); el.addEventListener('touchend', handleEnd); } createCard();</script><div style="margin-top:16px;padding:8px 0;font-size:11px;color:#888;font-style:italic;text-align:center;border-top:1px solid #e0e0e0"> Made by Plato Bougas all rights reserved 2026 .</div></body>
+<body>
+<style>
+:root {
+  --bg: #f0f2f5;
+  --card-bg: #ffffff;
+  --text-main: #1c1e21;
+  --text-sub: #65676b;
+  --primary: #007aff;
+  --success: #4caf50;
+  --error: #f44336;
+  --border: #e1e4e8;
+  --shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.game-area {
+  position: relative;
+  width: 350px;
+  height: 550px;
+  perspective: 1000px;
+}
+
+/* ---- shared card base ---- */
+.card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--card-bg);
+  border-radius: 32px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid transparent;
+  z-index: 2;
+}
+
+/* ---- original game card styles ---- */
+.card-header {
+  padding: 25px 0 15px;
+  text-align: center;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+.game-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+.score-row {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-sub);
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+.card-half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 30px;
+  text-align: center;
+}
+.top-half {
+  background: #f8f9fa;
+  border-bottom: 1px dashed var(--border);
+}
+.company-name {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+.vs-container {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 15;
+  pointer-events: none;
+  width: 100%;
+}
+.vs-badge {
+  background: #1c1e21;
+  color: white;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  margin-bottom: 10px;
+}
+.vs-instruction {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.95);
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.hand-hint {
+  width: 35px;
+  height: 35px;
+  border: 3px solid var(--primary);
+  border-radius: 50%;
+  margin-bottom: 12px;
+  animation: swipeHint 2.5s infinite;
+  background: rgba(0,122,255,0.1);
+  box-shadow: 0 0 15px rgba(0,122,255,0.2);
+}
+.swipe-label {
+  position: absolute;
+  top: 120px;
+  padding: 10px 20px;
+  border: 6px solid;
+  border-radius: 15px;
+  font-size: 2.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+.bigger { right: 20px; border-color: var(--success); color: var(--success); transform: rotate(15deg); }
+.smaller { left: 20px; border-color: var(--error); color: var(--error); transform: rotate(-15deg); }
+.card.wrong { animation: shake 0.4s; border-color: var(--error); }
+.card.correct { animation: pulse-success 0.5s ease-out; border-color: var(--success); }
+
+@keyframes swipeHint {
+  0% { transform: translateX(-50px); opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translateX(50px); opacity: 0; }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-15px); }
+  75% { transform: translateX(15px); }
+}
+@keyframes pulse-success {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* ---- TITLE CARD ---- */
+#titleCard {
+  cursor: default;
+  touch-action: auto;
+  user-select: none;
+  z-index: 10;
+}
+
+.title-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 30px;
+}
+
+.title-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 36px 32px;
+  gap: 0;
+}
+
+/* mini ticker inside the title card */
+.card-ticker-wrap {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 30px;
+  background: rgba(28,30,33,0.04);
+  border-top: 1px solid #f0f0f0;
+  overflow: hidden;
+  border-radius: 0 0 30px 30px;
+}
+.card-ticker-track {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  animation: cardTicker 20s linear infinite;
+  white-space: nowrap;
+}
+.card-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 0 16px;
+  color: var(--text-sub);
+}
+.card-ticker-item .t-sym { color: var(--text-main); }
+.card-ticker-item .t-up { color: var(--success); }
+.card-ticker-item .t-dn { color: var(--error); }
+
+@keyframes cardTicker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.title-eyebrow {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  margin-bottom: 18px;
+}
+
+.title-logo {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.title-logo span {
+  color: var(--primary);
+}
+
+.title-tagline {
+  font-size: 0.82rem;
+  color: var(--text-sub);
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.55;
+  margin-bottom: 28px;
+  max-width: 220px;
+}
+
+.start-btn {
+  background: #1c1e21;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 14px 40px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  animation: btnPulse 2.2s ease-in-out infinite;
+  transition: transform 0.12s;
+}
+.start-btn:hover { transform: scale(1.04); }
+.start-btn:active { transform: scale(0.97); }
+
+@keyframes btnPulse {
+  0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+  50% { box-shadow: 0 6px 28px rgba(0,0,0,0.35); }
+}
+
+.title-sub-note {
+  margin-top: 16px;
+  font-size: 0.62rem;
+  color: #b0b4bb;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+/* ---- LEADERBOARD CARD ---- */
+#lbCard {
+  cursor: default;
+  touch-action: auto;
+  z-index: 9;
+  display: none;
+}
+
+.lb-card-header {
+  padding: 22px 24px 14px;
+  text-align: center;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+.lb-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 4px;
+}
+.lb-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  font-weight: 600;
+}
+
+.your-score-block {
+  margin: 14px 20px 0;
+  background: #f8f9fa;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.ysb-left .ysb-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  margin-bottom: 4px;
+}
+.ysb-left .ysb-score {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1;
+}
+.ysb-right {
+  text-align: right;
+}
+.ysb-right .ysb-rank-num {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1;
+}
+.ysb-right .ysb-rank-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.name-entry-row {
+  display: flex;
+  gap: 8px;
+  margin: 10px 20px 0;
+  flex-shrink: 0;
+}
+.name-input {
+  flex: 1;
+  background: #f8f9fa;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 9px 13px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.name-input::placeholder { color: #b0b4bb; font-weight: 500; }
+.name-input:focus { border-color: var(--primary); }
+
+.post-btn {
+  background: #1c1e21;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.post-btn:disabled { opacity: 0.35; cursor: default; }
+
+.lb-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.lb-list::-webkit-scrollbar { width: 3px; }
+.lb-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.lb-loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-sub);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+}
+.lb-row.lb-you {
+  background: #eef6ff;
+  border-color: #b3d4f7;
+}
+.lb-rank-cell {
+  width: 24px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-sub);
+  text-align: center;
+  flex-shrink: 0;
+}
+.lb-name-cell {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.lb-you-tag {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-left: 4px;
+}
+.lb-score-cell {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--text-main);
+}
+
+.lb-footer {
+  padding: 12px 20px 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+.play-again-btn {
+  width: 100%;
+  background: #1c1e21;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 13px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.12s;
+}
+.play-again-btn:hover { transform: scale(1.02); }
+.play-again-btn:active { transform: scale(0.97); }
+
+/* screen transitions */
+.fade-in {
+  animation: fadeUp 0.35s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+.fade-out {
+  animation: fadeDown 0.25s cubic-bezier(0.55,0,1,0.45) forwards;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeDown {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-20px) scale(0.97); }
+}
+</style>
+
+<div class="game-area" id="gameArea">
+
+  <!-- TITLE CARD -->
+  <div class="card" id="titleCard">
+    <canvas class="title-canvas" id="titleCanvas"></canvas>
+
+    <div class="title-inner">
+      <div class="title-eyebrow">Global Leaderboard · Live</div>
+
+      <div class="title-logo">
+        Market<br><span>Cap</span><br>Duel
+      </div>
+
+      <div class="title-tagline">
+        Think you know which company<br>is worth more? Swipe to prove it.
+      </div>
+
+      <button class="start-btn" id="startBtn">Play</button>
+      <div class="title-sub-note">Swipe right if the top company is bigger</div>
+    </div>
+
+    <!-- ticker tape at the bottom of the title card -->
+    <div class="card-ticker-wrap">
+      <div class="card-ticker-track" id="cardTickerTrack"></div>
+    </div>
+  </div>
+
+  <!-- GAME CARD (created dynamically, same as original) -->
+  <div id="cardStack"></div>
+
+  <!-- LEADERBOARD CARD -->
+  <div class="card" id="lbCard">
+    <div class="lb-card-header">
+      <div class="lb-title">🏆 Leaderboard</div>
+      <div class="lb-subtitle">Global Rankings · All Time</div>
+    </div>
+
+    <div class="your-score-block">
+      <div class="ysb-left">
+        <div class="ysb-label">Your Score</div>
+        <div class="ysb-score" id="finalScore">0</div>
+      </div>
+      <div class="ysb-right">
+        <div class="ysb-rank-num" id="yourRankNum">—</div>
+        <div class="ysb-rank-label">Rank</div>
+      </div>
+    </div>
+
+    <div class="name-entry-row" id="nameEntryRow">
+      <input class="name-input" id="nameInput" type="text" placeholder="Your name…" maxlength="20" />
+      <button class="post-btn" id="postBtn">Post</button>
+    </div>
+
+    <div class="lb-list" id="lbList">
+      <div class="lb-loading">Loading scores…</div>
+    </div>
+
+    <div class="lb-footer">
+      <button class="play-again-btn" id="playAgainBtn">Play Again</button>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:16px;padding:8px 0;font-size:11px;color:#888;font-style:italic;text-align:center;border-top:1px solid #e0e0e0">Made by Plato Bougas all rights reserved 2026. </div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+
+/* ==============================
+   DATA
+============================== */
+const companies = [
+  { name: 'NVIDIA', cap: 5.23 },
+  { name: 'Alphabet', cap: 4.63 },
+  { name: 'Apple', cap: 4.59 },
+  { name: 'Microsoft', cap: 3.18 },
+  { name: 'Amazon', cap: 2.87 },
+  { name: 'TSMC', cap: 2.20 },
+  { name: 'Broadcom', cap: 2.03 },
+  { name: 'Meta', cap: 1.70 },
+  { name: 'Tesla', cap: 1.40 },
+  { name: 'Eli Lilly', cap: 1.10 },
+  { name: 'Berkshire Hathaway', cap: 1.00 },
+  { name: 'Walmart', cap: 1.00 },
+  { name: 'JPMorgan Chase', cap: 0.80 },
+  { name: 'Visa', cap: 0.62 }
+];
+
+const tickerData = [
+  ['NVDA','+3.2%',true],['GOOGL','+1.8%',true],['AAPL','-0.4%',false],
+  ['MSFT','+0.9%',true],['AMZN','+2.1%',true],['TSM','+1.5%',true],
+  ['AVGO','+4.1%',true],['META','+2.7%',true],['TSLA','-1.9%',false],
+  ['LLY','+0.6%',true],['BRK','-0.2%',false],['WMT','+1.1%',true],
+  ['JPM','+0.8%',true],['V','+0.5%',true]
+];
+
+/* ==============================
+   TITLE CANVAS — stock chart animation
+============================== */
+(function initTitleCanvas() {
+  const canvas = document.getElementById('titleCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 350, H = 550;
+  canvas.width = W; canvas.height = H;
+
+  // generate a handful of sine-wave "chart lines" with varying params
+  const lines = Array.from({ length: 14 }, (_, i) => ({
+    baseY: 80 + (i / 13) * (H - 160),
+    amp: 12 + Math.random() * 22,
+    freq: 0.01 + Math.random() * 0.015,
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.006 + Math.random() * 0.005,
+    isGreen: Math.random() > 0.45,
+    alpha: 0.05 + Math.random() * 0.08
+  }));
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    lines.forEach(l => {
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 3) {
+        const y = l.baseY + Math.sin(x * l.freq + t * l.speed + l.phase) * l.amp;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = l.isGreen
+        ? `rgba(76,175,80,${l.alpha})`
+        : `rgba(244,67,54,${l.alpha * 0.7})`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    });
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ==============================
+   TICKER INSIDE TITLE CARD
+============================== */
+(function buildCardTicker() {
+  const track = document.getElementById('cardTickerTrack');
+  let html = '';
+  for (let pass = 0; pass < 2; pass++) {
+    tickerData.forEach(([sym, chg, up]) => {
+      html += `<span class="card-ticker-item">
+        <span class="t-sym">${sym}</span>
+        <span class="${up ? 't-up' : 't-dn'}">${chg}</span>
+      </span>`;
+    });
+  }
+  track.innerHTML = html;
+})();
+
+/* ==============================
+   GAME STATE
+============================== */
+let score = 0;
+let highScore = parseInt(localStorage.getItem('mcap_duel_v8_best') || '0');
+let currentPair = [];
+let lastScore = 0;
+
+function getNewPair() {
+  let i = Math.floor(Math.random() * companies.length);
+  let j = Math.floor(Math.random() * companies.length);
+  while (j === i) j = Math.floor(Math.random() * companies.length);
+  return [companies[i], companies[j]];
+}
+
+/* ==============================
+   GAME CARD (identical to original)
+============================== */
+function createCard() {
+  const pair = getNewPair();
+  currentPair = pair;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.cursor = 'grab';
+  card.style.touchAction = 'none';
+  card.style.userSelect = 'none';
+  card.style.zIndex = '2';
+
+  card.innerHTML = `
+    <div class='card-header'>
+      <div class='game-title'>Market Cap Duel</div>
+      <div class='score-row'><span>Score: ${score}</span><span>Best: ${highScore}</span></div>
+    </div>
+    <div class='swipe-label bigger'>BIGGER</div>
+    <div class='swipe-label smaller'>SMALLER</div>
+    <div class='card-half top-half'><div class='company-name'>${pair[0].name}</div></div>
+    <div class='vs-container'>
+      <div class='hand-hint'></div>
+      <div class='vs-badge'>VS</div>
+      <div class='vs-instruction'>Swipe Right if Top is BIGGER</div>
+    </div>
+    <div class='card-half'><div class='company-name'>${pair[1].name}</div></div>
+  `;
+
+  setupSwipe(card);
+  document.getElementById('cardStack').appendChild(card);
+}
+
+function setupSwipe(el) {
+  let startX = 0;
+  let isDragging = false;
+  const bigger = el.querySelector('.bigger');
+  const smaller = el.querySelector('.smaller');
+
+  const handleStart = (e) => {
+    isDragging = true;
+    startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+    el.style.transition = 'none';
+  };
+
+  const handleMove = (e) => {
+    if (!isDragging) return;
+    const x = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+    const walk = x - startX;
+    el.style.transform = `translateX(${walk}px) rotate(${walk / 15}deg)`;
+    bigger.style.opacity = Math.min(walk / 100, 1);
+    smaller.style.opacity = Math.min(-walk / 100, 1);
+  };
+
+  const handleEnd = (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    const x = e.type.includes('mouse') ? e.pageX : (e.changedTouches ? e.changedTouches[0].pageX : startX);
+    const walk = x - startX;
+
+    if (Math.abs(walk) > 120) {
+      const isRight = walk > 0;
+      const isCorrect = isRight
+        ? currentPair[0].cap >= currentPair[1].cap
+        : currentPair[0].cap < currentPair[1].cap;
+
+      if (isCorrect) {
+        score++;
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem('mcap_duel_v8_best', highScore);
+        }
+        el.classList.add('correct');
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, zIndex: 9999 });
+        setTimeout(() => { el.remove(); createCard(); }, 500);
+      } else {
+        // wrong — go to leaderboard
+        lastScore = score;
+        score = 0;
+        el.classList.add('wrong');
+        setTimeout(() => {
+          el.remove();
+          showLeaderboard();
+        }, 600);
+      }
+    } else {
+      el.style.transition = 'transform 0.3s ease';
+      el.style.transform = '';
+      bigger.style.opacity = 0;
+      smaller.style.opacity = 0;
+    }
+  };
+
+  el.addEventListener('mousedown', handleStart);
+  el.addEventListener('mousemove', handleMove);
+  window.addEventListener('mouseup', handleEnd);
+  el.addEventListener('touchstart', handleStart);
+  el.addEventListener('touchmove', handleMove);
+  el.addEventListener('touchend', handleEnd);
+}
+
+/* ==============================
+   SCREEN SWITCHING
+============================== */
+function showScreen(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+  el.classList.remove('fade-in');
+  void el.offsetWidth; // reflow
+  el.classList.add('fade-in');
+}
+
+function hideScreen(id, cb) {
+  const el = document.getElementById(id);
+  el.classList.add('fade-out');
+  el.addEventListener('animationend', () => {
+    el.style.display = 'none';
+    el.classList.remove('fade-out');
+    if (cb) cb();
+  }, { once: true });
+}
+
+/* ==============================
+   LEADERBOARD
+============================== */
+const LB_KEY = 'mcd_lb_v1';
+
+async function fetchScores() {
+  try {
+    const r = await window.storage.get(LB_KEY, true);
+    if (r && r.value) {
+      const d = JSON.parse(r.value);
+      return Array.isArray(d) ? d : [];
+    }
+  } catch(e) {}
+  return [];
+}
+
+async function saveScore(name, s) {
+  let scores = await fetchScores();
+  scores.push({ name: (name || 'Anonymous').trim().slice(0, 18), score: s, ts: Date.now() });
+  scores.sort((a, b) => b.score - a.score);
+  scores = scores.slice(0, 50);
+  await window.storage.set(LB_KEY, JSON.stringify(scores), true);
+  return scores;
+}
+
+function renderScores(scores, highlightName) {
+  const list = document.getElementById('lbList');
+  if (!scores.length) {
+    list.innerHTML = '<div class="lb-loading">No scores yet — be the first!</div>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  let marked = false;
+  list.innerHTML = scores.slice(0, 25).map((s, i) => {
+    const isYou = !marked && highlightName && s.name === highlightName && s.score === lastScore;
+    if (isYou) marked = true;
+    return `<div class="lb-row${isYou ? ' lb-you' : ''}">
+      <div class="lb-rank-cell">${medals[i] || (i + 1)}</div>
+      <div class="lb-name-cell">${escHtml(s.name)}${isYou ? '<span class="lb-you-tag">you</span>' : ''}</div>
+      <div class="lb-score-cell">${s.score}</div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function showLeaderboard() {
+  document.getElementById('finalScore').textContent = lastScore;
+  document.getElementById('yourRankNum').textContent = '—';
+  document.getElementById('nameInput').value = '';
+  document.getElementById('nameEntryRow').style.display = 'flex';
+  document.getElementById('postBtn').disabled = false;
+  document.getElementById('postBtn').textContent = 'Post';
+  document.getElementById('lbList').innerHTML = '<div class="lb-loading">Loading scores…</div>';
+
+  showScreen('lbCard');
+
+  const scores = await fetchScores();
+  renderScores(scores, null);
+}
+
+document.getElementById('postBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('postBtn');
+  const name = document.getElementById('nameInput').value.trim() || 'Anonymous';
+  btn.disabled = true;
+  btn.textContent = '…';
+  try {
+    const scores = await saveScore(name, lastScore);
+    const rank = scores.findIndex(s => s.name === name && s.score === lastScore) + 1;
+    document.getElementById('yourRankNum').textContent = `#${rank}`;
+    document.getElementById('nameEntryRow').style.display = 'none';
+    renderScores(scores, name);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Post';
+  }
+});
+
+document.getElementById('nameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('postBtn').click();
+});
+
+document.getElementById('playAgainBtn').addEventListener('click', () => {
+  hideScreen('lbCard', () => {
+    score = 0;
+    createCard();
+  });
+});
+
+/* ==============================
+   START BUTTON
+============================== */
+document.getElementById('startBtn').addEventListener('click', () => {
+  hideScreen('titleCard', () => {
+    createCard();
+  });
+});
+
+</script>
+</body>
 </html>
