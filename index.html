@@ -847,6 +847,7 @@ async function fetchScores() {
     console.error('fetchScores error:', e);
     return [];
   }
+}
 async function saveScore(name, s) {
   await fetch(APPS_SCRIPT_URL, {
     method: 'POST',
