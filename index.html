@@ -833,28 +833,22 @@ function hideScreen(id, cb) {
 /* ==============================
    LEADERBOARD
 ============================== */
-const LB_KEY = 'mcd_lb_v1';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFxWfsqHX5DPB_gRNJKrCI78xfSX5c87LYjaxaabNES6FNLP-KyDtm7YFelwbFbYWF9Q/exec';
 
 async function fetchScores() {
-  try {
-    const r = await window.storage.get(LB_KEY, true);
-    if (r && r.value) {
-      const d = JSON.parse(r.value);
-      return Array.isArray(d) ? d : [];
-    }
-  } catch(e) {}
-  return [];
+  const r = await fetch(APPS_SCRIPT_URL);
+  const data = await r.json();
+  return Array.isArray(data) ? data : [];
 }
 
 async function saveScore(name, s) {
-  let scores = await fetchScores();
-  scores.push({ name: (name || 'Anonymous').trim().slice(0, 18), score: s, ts: Date.now() });
-  scores.sort((a, b) => b.score - a.score);
-  scores = scores.slice(0, 50);
-  await window.storage.set(LB_KEY, JSON.stringify(scores), true);
-  return scores;
+  const r = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ name: name.trim().slice(0, 18) || 'Anonymous', score: s }),
+  });
+  const data = await r.json();
+  return Array.isArray(data) ? data : [];
 }
-
 function renderScores(scores, highlightName) {
   const list = document.getElementById('lbList');
   if (!scores.length) {
