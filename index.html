@@ -836,11 +836,17 @@ function hideScreen(id, cb) {
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNp3soyJt0XydOuq9TgN0PHfL3YORXK0jUQAhSM6U9UIopOcYfruP8qev8jzRh3rcHYQ/exec';
 
 async function fetchScores() {
-  const r = await fetch(APPS_SCRIPT_URL);
-  const data = await r.json();
-  return Array.isArray(data) ? data : [];
-}
-
+  try {
+    const r = await fetch(APPS_SCRIPT_URL + '?callback=cb', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await r.json();
+    return Array.isArray(data) ? data : [];
+  } catch(e) {
+    console.error('fetchScores error:', e);
+    return [];
+  }
 async function saveScore(name, s) {
   await fetch(APPS_SCRIPT_URL, {
     method: 'POST',
